@@ -1,5 +1,6 @@
 import express from 'express'
 import userrouter from './routes/user.router.js'
+import error from '../middlewares/error.js'
 
 const app = express()
 
@@ -9,6 +10,7 @@ const port = "3000"
 
 app.use('/user',[userrouter])
 
+app.use(error)
 app.listen(port,(req,res) => {
 	console.log(port+" 서버 시작")
 })
