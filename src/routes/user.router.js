@@ -1,27 +1,29 @@
 import { prisma } from '../../utils/prisma/index.js';
 import express from 'express';
+import bcrypt from 'bcrypt';
 
 const router = express.Router();
 
 router.post('/sign-up', async (req, res, next) => {
     try{
     const {email,password,name} = req.body
-    const data = await prisma.User.create({
-        data:{
-            email,
-            password,
-            name
-        }
-    })
+    const hashedPassword = await bcrypt.hash(password, 10);
     const findemail = await prisma.User.findFirst({
-        data :{
+        where :{
             email
         }
     })
     if(findemail){
-        res.status(409).json({message:'이미 존재하는 이메일'})
+        return res.status(409).json({message:'이미 존재하는 이메일'})
     }
-    res.status(200).json({data:data})
+    const data = await prisma.User.create({
+        data:{
+            email,
+            password:hashedPassword,
+            name
+        }
+    })
+    return res.status(200).json({data:data})
     }catch (err) {
         next(err);
     }
@@ -32,13 +34,12 @@ router.post('/sign-in', async (req,res,next) =>{
     const {email, password} = req.body
     const data = await prisma.User.findFirst({
         where : {
-            email,
-            password
+            email
         }
     })
-    if(email===data.email && password === data.password){
-        res.status(200).json({message:'로그인 성공'})
-    }
+    if(email===data.email &&await bcrypt.compare(password, data.password)===true){
+        return res.status(200).json({message:'로그인 성공'})
+    }else{return res.status(200).json({message:'로그인 실패'})}
     }catch (err) {
         next(err);
     }
@@ -57,7 +58,7 @@ router.delete('/userdelete', async (req,res,next) =>{
             userid:true
         }
     })
-    res.json({data:data1})
+    return res.json({data:data1})
     }catch (err) {  
         next(err);
     }
