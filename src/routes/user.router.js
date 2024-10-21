@@ -1,6 +1,6 @@
 import { prisma } from '../../utils/prisma/index.js';
-
 import express from 'express';
+
 const router = express.Router();
 
 router.post('/sign-up', async (req, res, next) => {
@@ -13,6 +13,14 @@ router.post('/sign-up', async (req, res, next) => {
             name
         }
     })
+    const findemail = await prisma.User.findFirst({
+        data :{
+            email
+        }
+    })
+    if(findemail){
+        res.status(409).json({message:'이미 존재하는 이메일'})
+    }
     res.status(200).json({data:data})
     }catch (err) {
         next(err);
@@ -32,6 +40,25 @@ router.post('/sign-in', async (req,res,next) =>{
         res.status(200).json({message:'로그인 성공'})
     }
     }catch (err) {
+        next(err);
+    }
+});
+
+router.delete('/userdelete', async (req,res,next) =>{
+    try{
+    const {userid} = req.body
+    await prisma.User.delete({
+        where:{
+            userid
+        }
+    })
+    const data1 = await prisma.User.findMany({
+        select:{
+            userid:true
+        }
+    })
+    res.json({data:data1})
+    }catch (err) {  
         next(err);
     }
 });
