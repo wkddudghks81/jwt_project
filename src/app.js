@@ -7,8 +7,8 @@ app.use(express.json())	//body json형태 요청을 받기 위해
 
 const port = "3000"
 
-app.use('/',[userrouter])
+app.use('/user',[userrouter])
 
 app.listen(port,(req,res) => {
-	console.log(port+"서버 시작")
+	console.log(port+" 서버 시작")
 })
